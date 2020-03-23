@@ -30,11 +30,12 @@ Para passar os dados **confidenciais** do usuário utilizamos variáveis de
 ambiente, abaixo exibimos a lista das possíveis variáveis de ambiente:
 
 - **EMAIL**: login do usuário
+- **PASSWD**: senha do usuário
 
 Exemplo:
 
 ```bash
-EMAIL=login_do_usuario ./main.py
+EMAIL="login_do_usuario" PASSWD="senha" ./main.py
 ```
 
 [1]: https://icrop.online/
