@@ -13,6 +13,9 @@ gerados pela [Icrop][1]
 
 ## Instalação
 
+Caso esteja em um ambiente linux, segue os comandos abaixo para instalar as
+dependências do projeto.
+
 ```bash
 git clone https://github.com/murilobsd/icrop-csv
 cd icrop-csv
@@ -21,5 +24,17 @@ python3 -m venv venv
 pip install -r requirements.txt
 ```
 
-[1]: https://icrop.online/
+## Uso
 
+Para passar os dados **confidenciais** do usuário utilizamos variáveis de
+ambiente, abaixo exibimos a lista das possíveis variáveis de ambiente:
+
+- **EMAIL**: login do usuário
+
+Exemplo:
+
+```bash
+EMAIL=login_do_usuario ./main.py
+```
+
+[1]: https://icrop.online/
