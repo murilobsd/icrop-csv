@@ -5,7 +5,7 @@ gerados pela [Icrop][1]
 
 ## TODO
 
-- [ ] autenticar
+- [x] autenticar
 - [ ] Acessar relatório
 - [ ] Submeter o formulário para filtrar o relatório desejado
 - [ ] Exportar para CSV
@@ -32,7 +32,7 @@ ambiente, abaixo exibimos a lista das possíveis variáveis de ambiente:
 - **EMAIL**: login do usuário
 - **PASSWD**: senha do usuário
 
-Exemplo:
+Exemplo somente autenticação:
 
 ```bash
 EMAIL="login_do_usuario" PASSWD="senha" ./main.py
