@@ -26,6 +26,9 @@ import requests
 BASE_URL_ICROP = "https://icrop.online%s"
 BASE_URL_GOOGLE = "https://www.googleapis.com%s"
 
+# Token do formulário de autenticaçãod o icrop
+FORM_TOKEN = ":FIRE:TOKEN:%s"
+
 # Chave da aplicação
 KEY="AIzaSyD0dcdKuQFfyYnFuwsPjaCkArPEGxfEyOg"
 
@@ -39,6 +42,7 @@ VERSION="0.0.1"
 EMAIL = os.getenv("EMAIL", "")
 PASSWD = os.getenv("PASSWD", "")
 
+# Ativando sessões do request
 REQ = requests.Session()
 
 def auth_email(email):
@@ -77,7 +81,7 @@ def auth_email(email):
 
 	res = REQ.post(url, json=data, timeout=TIMEOUT)
 
-	print(res.status_code)
+	print(res.status_code) # 200
 	print(res.json())
 
 	""" Exemplo resposta:
@@ -133,8 +137,58 @@ def auth_password(email, password):
 
 	res = REQ.post(url, json=data, timeout=TIMEOUT)
 
-	print(res.status_code)
+	print(res.status_code) # 200
 	print(res.json())
+
+	# TODO: checar se existe essa chave
+	return res.json()['idToken']
+
+def auth_icrop(email, token):
+	"""Autenticação token.
+
+	Terceira etapa da autenticação, depois de finalizado a autenticação do
+	google é necessário enviar o token para validar junto ao serviço da Icrop e
+	consequentemente gerar uma sessão válida.
+	"""
+
+	path = "/icrop/admin_home.php"
+	url = BASE_URL_ICROP % path
+	headers = {
+		"Host": "icrop.online",
+		"Origin": "https://icrop.online",
+		"Referer": "https://icrop.online/icrop/admin_home.php",
+		"Accept-Language": "en-US,en;q=0.5",
+		"Accept-Encoding": "gzip, deflate, br",
+		"Connection": "keep-alive",
+		"Upgrade-Insecure-Requests": "1",
+		"User-Agent": "Mozilla/5.0 (X11; OpenBSD amd64; rv:74.0) Gecko/20100101 Firefox/74.0"
+	}
+
+	# checamos se o email é valido
+	if not re.search(RE_EMAIL, email):
+		print("E-mail: %s parece ser inválido." % email)
+		return False
+
+	# TODO: isso pode melhorar, menor que?
+	if len(token) == 0:
+		print("Token deve ser maior que 0")
+		return False
+
+	# dados a serem enviados para o google
+	data = {
+		"formlogin": email,
+		"formsenha": FORM_TOKEN % token,
+	}
+
+	REQ.get(url) # isso só serve para criarmos a sessão
+	time.sleep(DEFAULT_SLEEP)
+
+	print("Requisitando [%s] - [%s]" % (url, token));
+
+	res = REQ.post(url, data=data, timeout=TIMEOUT)
+
+	print(res.status_code) # 302
+	print(res.content)
 
 	return True
 
@@ -153,12 +207,15 @@ def main(email, password):
 	banner()
 
 	# Primeira etapa autenticação
-	# auth_email(email)
+	auth_email(email)
 
 	# simulo o usuário demorando para digitar
 	time.sleep(DEFAULT_SLEEP + 3)
 	# segunda etapa da autenticação
-	auth_password(email, password)
+	token = auth_password(email, password)
+
+	# terceira etapa da autenticação
+	auth_icrop(email, token)
 
 if __name__ == "__main__":
 	main(EMAIL, PASSWD)
