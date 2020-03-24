@@ -6,8 +6,8 @@ gerados pela [Icrop][1]
 ## TODO
 
 - [x] autenticar
-- [ ] Acessar relatório
-- [ ] Submeter o formulário para filtrar o relatório desejado
+- [x] Acessar relatório
+- [x] Submeter o formulário para filtrar o relatório desejado
 - [ ] Exportar para CSV
 - [ ] Salvar arquivo csv
 
