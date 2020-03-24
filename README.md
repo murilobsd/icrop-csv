@@ -6,10 +6,10 @@ gerados pela [Icrop][1]
 ## TODO
 
 - [x] autenticar
-- [ ] Acessar relatório
-- [ ] Submeter o formulário para filtrar o relatório desejado
-- [ ] Exportar para CSV
-- [ ] Salvar arquivo csv
+- [x] Acessar relatório
+- [x] Submeter o formulário para filtrar o relatório desejado
+- [x] Exportar para CSV
+- [x] Salvar arquivo csv
 
 ## Instalação
 
@@ -31,11 +31,18 @@ ambiente, abaixo exibimos a lista das possíveis variáveis de ambiente:
 
 - **EMAIL**: login do usuário
 - **PASSWD**: senha do usuário
+- **CODEST**: código da estação
 
 Exemplo somente autenticação:
 
 ```bash
 EMAIL="login_do_usuario" PASSWD="senha" ./main.py
+```
+
+Exemplo baixando os dados:
+
+```bash
+EMAIL="login_do_usuario" PASSWD="senha" CODEST=codigo_da_estacao ./main.py
 ```
 
 [1]: https://icrop.online/
