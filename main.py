@@ -35,12 +35,13 @@ KEY="AIzaSyD0dcdKuQFfyYnFuwsPjaCkArPEGxfEyOg"
 # Outras opções
 DEFAULT_SLEEP = 1.5
 RE_EMAIL = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
-TIMEOUT=5
+TIMEOUT=15
 VERSION="0.0.1"
 
 # Variáveis de ambiente
 EMAIL = os.getenv("EMAIL", "")
 PASSWD = os.getenv("PASSWD", "")
+CODEST = os.getenv("CODEST", "")
 
 # Ativando sessões do request
 REQ = requests.Session()
@@ -187,10 +188,70 @@ def auth_icrop(email, token):
 
 	res = REQ.post(url, data=data, timeout=TIMEOUT)
 
-	print(res.status_code) # 302
+	print(res.status_code) # 200
 	print(res.content)
 
 	return True
+
+def submit_form(codigo_estacao, periodo_ini, periodo_final, exibir_por,
+				sensores=["92", "1", "2", "21", "3", "4"]):
+	"""Submetemos o formulário do relatório.
+
+	Algumas checagens são necessárias antes do envio do formulário, para
+	obedecerem as regras de negócio.
+	"""
+
+	# itens abaixo são parametros a url
+	item = "74" # tipo de relatório
+	sid = "9569c6e5b97b" # identificacao
+
+	path = "/icrop/admin_home.php?item={}&sid={}".format(item, sid)
+	url = BASE_URL_ICROP % path
+
+	# dados do formulario
+	data = {
+		"estacao": CODEST,
+		"estacao2": CODEST,
+		"estacao3": CODEST,
+		"VIEW_periodo": "{}+-+{}".format(periodo_ini, periodo_final),
+		"exibe_por": exibir_por,
+		"grafico_del[]": sensores,
+		"enviar2": "Filtrar",
+		"enviar": "Filtrar"
+	}
+
+	print("Requisitando [%s]" % (url));
+
+	res = REQ.post(url, data=data, timeout=TIMEOUT)
+
+	print(res.status_code) # 200
+	print(res.content)
+
+def get_xlsx(codigo_estacao, dest):
+	"""Get xlsx"""
+
+	path = "/icrop/admsite-estacao_gera_xls_comp?lista={},{},{}".format(
+		CODEST, CODEST, CODEST
+	)
+	url = BASE_URL_ICROP % path
+
+	print("Requisitando [%s]" % (url));
+
+	res = REQ.get(url, timeout=TIMEOUT, stream=True)
+	print(res.status_code) #302 -> 200
+
+	# checamos o cabecalho se foi tudo0 ok
+	if res.headers["Content-Type"] == "application/force-download":
+		print("Salvando: %s" % dest)
+		with open(dest, "wb") as f:
+			for chunk in res:
+				f.write(chunk)
+	else:
+		print("Não existe arquivo para download, headers: %s" % str(
+			res.headers))
+		return False
+	return True
+
 
 def banner():
 	"""Banner function"""
@@ -201,7 +262,8 @@ def banner():
 	print("=" * 80)
 	print("\n")
 
-def main(email, password):
+
+def main(email, password, codigo_estacao):
 	"""Main function."""
 
 	banner()
@@ -217,5 +279,13 @@ def main(email, password):
 	# terceira etapa da autenticação
 	auth_icrop(email, token)
 
+	# simulo o usuário demorando para digitar
+	time.sleep(DEFAULT_SLEEP + 3)
+	# segunda etapa da autenticação
+	submit_form(codigo_estacao, "23/02/2020", "23/03/2020", "1")
+	# download planilha
+	get_xlsx(codigo_estacao, "./export.xlsx")
+
+
 if __name__ == "__main__":
-	main(EMAIL, PASSWD)
+	main(EMAIL, PASSWD, CODEST)
