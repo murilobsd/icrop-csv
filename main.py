@@ -41,6 +41,7 @@ VERSION="0.0.1"
 # Variáveis de ambiente
 EMAIL = os.getenv("EMAIL", "")
 PASSWD = os.getenv("PASSWD", "")
+CODEST = os.getenv("CODEST", "")
 
 # Ativando sessões do request
 REQ = requests.Session()
@@ -192,7 +193,8 @@ def auth_icrop(email, token):
 
 	return True
 
-def submit_form(periodo_ini, periodo_final, exibir_por, sensores=[]):
+def submit_form(codigo_estacao, periodo_ini, periodo_final, exibir_por,
+				sensores=["92", "1", "2", "21", "3", "4"]):
 	"""Submetemos o formulário do relatório.
 
 	Algumas checagens são necessárias antes do envio do formulário, para
@@ -208,12 +210,12 @@ def submit_form(periodo_ini, periodo_final, exibir_por, sensores=[]):
 
 	# dados do formulario
 	data = {
-		"estacao": "518",
-		"estacao2": "518",
-		"estacao3": "518",
+		"estacao": CODEST,
+		"estacao2": CODEST,
+		"estacao3": CODEST,
 		"VIEW_periodo": "{}+-+{}".format(periodo_ini, periodo_final),
 		"exibe_por": exibir_por,
-		"grafico_del[]": ["92", "1", "2", "21", "3", "4"],
+		"grafico_del[]": sensores,
 		"enviar2": "Filtrar",
 		"enviar": "Filtrar"
 	}
@@ -225,6 +227,30 @@ def submit_form(periodo_ini, periodo_final, exibir_por, sensores=[]):
 	print(res.status_code) # 200
 	print(res.content)
 
+def get_xlsx(codigo_estacao, dest):
+	"""Get xlsx"""
+
+	path = "/icrop/admsite-estacao_gera_xls_comp?lista={},{},{}".format(
+		CODEST, CODEST, CODEST
+	)
+	url = BASE_URL_ICROP % path
+
+	print("Requisitando [%s]" % (url));
+
+	res = REQ.get(url, timeout=TIMEOUT, stream=True)
+	print(res.status_code) #302 -> 200
+
+	# checamos o cabecalho se foi tudo0 ok
+	if res.headers["Content-Type"] == "application/force-download":
+		print("Salvando: %s" % dest)
+		with open(dest, "wb") as f:
+			for chunk in res:
+				f.write(chunk)
+	else:
+		print("Não existe arquivo para download, headers: %s" % str(
+			res.headers))
+		return False
+	return True
 
 def banner():
 	"""Banner function"""
@@ -235,7 +261,7 @@ def banner():
 	print("=" * 80)
 	print("\n")
 
-def main(email, password):
+def main(email, password, codigo_estacao):
 	"""Main function."""
 
 	banner()
@@ -254,7 +280,10 @@ def main(email, password):
 	# simulo o usuário demorando para digitar
 	time.sleep(DEFAULT_SLEEP + 3)
 	# segunda etapa da autenticação
-	submit_form("23/02/2020", "23/03/2020", "1")
+	submit_form(codigo_estacao, "23/02/2020", "23/03/2020", "1")
+	# download planilha
+	get_xlsx(codigo_estacao, "./export.xlsx")
+
 
 if __name__ == "__main__":
-	main(EMAIL, PASSWD)
+	main(EMAIL, PASSWD, CODEST)
