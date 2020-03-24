@@ -35,7 +35,7 @@ KEY="AIzaSyD0dcdKuQFfyYnFuwsPjaCkArPEGxfEyOg"
 # Outras opções
 DEFAULT_SLEEP = 1.5
 RE_EMAIL = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
-TIMEOUT=5
+TIMEOUT=15
 VERSION="0.0.1"
 
 # Variáveis de ambiente
@@ -187,10 +187,44 @@ def auth_icrop(email, token):
 
 	res = REQ.post(url, data=data, timeout=TIMEOUT)
 
-	print(res.status_code) # 302
+	print(res.status_code) # 200
 	print(res.content)
 
 	return True
+
+def submit_form(periodo_ini, periodo_final, exibir_por, sensores=[]):
+	"""Submetemos o formulário do relatório.
+
+	Algumas checagens são necessárias antes do envio do formulário, para
+	obedecerem as regras de negócio.
+	"""
+
+	# itens abaixo são parametros a url
+	item = "74" # tipo de relatório
+	sid = "9569c6e5b97b" # identificacao
+
+	path = "/icrop/admin_home.php?item={}&sid={}".format(item, sid)
+	url = BASE_URL_ICROP % path
+
+	# dados do formulario
+	data = {
+		"estacao": "518",
+		"estacao2": "518",
+		"estacao3": "518",
+		"VIEW_periodo": "{}+-+{}".format(periodo_ini, periodo_final),
+		"exibe_por": exibir_por,
+		"grafico_del[]": ["92", "1", "2", "21", "3", "4"],
+		"enviar2": "Filtrar",
+		"enviar": "Filtrar"
+	}
+
+	print("Requisitando [%s]" % (url));
+
+	res = REQ.post(url, data=data, timeout=TIMEOUT)
+
+	print(res.status_code) # 200
+	print(res.content)
+
 
 def banner():
 	"""Banner function"""
@@ -216,6 +250,11 @@ def main(email, password):
 
 	# terceira etapa da autenticação
 	auth_icrop(email, token)
+
+	# simulo o usuário demorando para digitar
+	time.sleep(DEFAULT_SLEEP + 3)
+	# segunda etapa da autenticação
+	submit_form("23/02/2020", "23/03/2020", "1")
 
 if __name__ == "__main__":
 	main(EMAIL, PASSWD)
